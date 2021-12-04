@@ -39,7 +39,7 @@ func PartOne() {
 	board := 0
 	for i < len(inputs) {
 		for r := 0; r < 5; r++ {
-			// TIL: Srings.spit doesn't work here!
+			// TIL: Srings.split doesn't work here!
 			row := strings.Fields(inputs[i])
 			for c := 0; c < 5; c++ {
 				n := row[c]
