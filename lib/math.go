@@ -1,5 +1,15 @@
 package lib
 
+import "strconv"
+
+func ToInt(in string) int {
+	if num, err := strconv.Atoi(in); err != nil {
+		panic(err)
+	} else {
+		return num
+	}
+}
+
 func Max(a, b int) int {
 	if a > b {
 		return a

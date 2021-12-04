@@ -46,8 +46,7 @@ func PartOne() {
 				rowsOfChosenNumber[n] = append(rowsOfChosenNumber[n], Row{board, r})
 				colsOfChosenNumber[n] = append(colsOfChosenNumber[n], Col{board, c})
 
-				nCasted, _ := strconv.Atoi(n)
-				boardSums[board] += nCasted
+				boardSums[board] += lib.ToInt(n)
 
 			}
 			i++
@@ -71,7 +70,7 @@ func PartOne() {
 
 			if squaresLeftInRow[row] == 0 {
 				hasBingo = true
-				print(amt * boardSums[row.board])
+				print(amt*boardSums[row.board], "\n")
 				break
 			}
 		}
@@ -83,7 +82,7 @@ func PartOne() {
 
 			if squaresLeftInCol[col] == 0 {
 				hasBingo = true
-				print(amt * boardSums[col.board])
+				print(amt*boardSums[col.board], "\n")
 				break
 			}
 		}
@@ -138,8 +137,9 @@ func PartTwo() {
 
 	// Let's play!!
 	numbers := strings.Split(inputs[0], ",")
+	sumFromLastBingo := 0
 	for _, n := range numbers {
-		amt, _ := strconv.Atoi(n)
+		amt := lib.ToInt(n)
 
 		// Mark rows
 		rows := rowsOfNumber[n]
@@ -149,7 +149,7 @@ func PartTwo() {
 
 			if rowCheck[row] == 0 && !boardHasBingoed[row.board] {
 				boardHasBingoed[row.board] = true
-				print(amt*boardSums[row.board], "\n")
+				sumFromLastBingo = amt * boardSums[row.board]
 			}
 		}
 
@@ -159,12 +159,13 @@ func PartTwo() {
 			colCheck[col] -= 1
 			if colCheck[col] == 0 && !boardHasBingoed[col.board] {
 				boardHasBingoed[col.board] = true
-				print(amt*boardSums[col.board], "\n")
+				sumFromLastBingo = amt * boardSums[col.board]
 			}
 
 		}
 
 	}
+	print(sumFromLastBingo)
 }
 
 func main() {
