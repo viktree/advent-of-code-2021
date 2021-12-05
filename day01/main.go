@@ -2,28 +2,27 @@ package main
 
 import (
 	"advent-of-code-2021/lib"
+	"fmt"
 )
 
 func PartOne() {
-
 	inputs := lib.ReadInputFileToIntegers("input.txt")
 
-	previous := inputs[0]
-	increases := 0
+	previous, increases := inputs[0], 0
+
 	for _, current := range inputs {
 		if current > previous {
-			increases = increases + 1
+			increases++
 		}
 		previous = current
 	}
-	print(increases, "\n")
+	fmt.Println(increases)
 }
 
 func PartTwo() {
 	inputs := lib.ReadInputFileToIntegers("input.txt")
 
-	previousSum := 0
-	increases := 0
+	previousSum, increases := 0, 0
 
 	for i := 3; i < len(inputs); i++ {
 		currentSum := inputs[i] + inputs[i-1] + inputs[i-2]
@@ -35,12 +34,11 @@ func PartTwo() {
 		previousSum = currentSum
 
 	}
-	println(increases, "\n")
+	fmt.Println(increases)
 
 }
 
 func main() {
 	PartOne()
-
 	PartTwo()
 }
