@@ -2,8 +2,15 @@ package main
 
 import (
 	"advent-of-code-2021/lib"
+	"fmt"
 	"strconv"
 	"strings"
+)
+
+const (
+	UP      = "up"
+	DOWN    = "down"
+	FORWARD = "forward"
 )
 
 func parseCommand(rawCmd string) (string, int) {
@@ -13,25 +20,24 @@ func parseCommand(rawCmd string) (string, int) {
 }
 
 func PartOne() {
-
 	inputs := lib.ReadInputFile("input.txt")
 
 	vertical, horizontal := 0, 0
 
 	for _, input := range inputs {
 		dir, x := parseCommand(input)
-		if dir == "down" {
+		if dir == DOWN {
 			vertical += x
 		}
-		if dir == "up" {
+		if dir == UP {
 			vertical -= x
 		}
-		if dir == "forward" {
+		if dir == FORWARD {
 			horizontal += x
 		}
 	}
 
-	print(vertical*horizontal, "\n")
+	fmt.Println(vertical * horizontal)
 }
 
 func PartTwo() {
@@ -42,19 +48,19 @@ func PartTwo() {
 
 	for _, input := range inputs {
 		dir, x := parseCommand(input)
-		if dir == "down" {
+		if dir == DOWN {
 			aim += x
 		}
-		if dir == "up" {
+		if dir == UP {
 			aim -= x
 		}
-		if dir == "forward" {
+		if dir == FORWARD {
 			horizontal += x
 			vertical += aim * x
 		}
 	}
 
-	print(vertical*horizontal, "\n")
+	fmt.Println(vertical * horizontal)
 
 }
 
