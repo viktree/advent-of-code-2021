@@ -2,170 +2,186 @@ package main
 
 import (
 	"advent-of-code-2021/lib"
+	"fmt"
 	"strconv"
 	"strings"
 )
 
-type Row struct {
-	board, row int
+type LineType bool
+
+const (
+
+	// Enum of two values
+	Row = true
+	Col = false
+
+	// Parsing size
+	PARSE_BOARD_SIZE = 6
+	BOARD_SIZE       = PARSE_BOARD_SIZE - 1
+)
+
+type BingoCardLine struct {
+	cardId   int
+	lineType LineType
+	lineIdx  int
 }
 
-type Col struct {
-	board, col int
+func updateBoardScores(scores map[BingoCardLine]int, cardId int, amount int) map[BingoCardLine]int {
+	for i := 0; i < 5; i++ {
+		scores[BingoCardLine{cardId, Row, i}] += amount
+		scores[BingoCardLine{cardId, Col, i}] += amount
+	}
+	return scores
 }
 
 func PartOne() {
-
 	inputs := lib.ReadInputFile("input.txt")
 
-	squaresLeftInRow := map[Row]int{}
-	squaresLeftInCol := map[Col]int{}
-
 	// Start with empty rows and cols. Need 5 markings to continue
-	numberOfBoards := len(inputs) / 6
-	boardSums := map[int]int{}
-	for board := 0; board < numberOfBoards; board++ {
-		for i := 0; i < 5; i++ {
-			squaresLeftInRow[Row{board, i}] = 5
-			squaresLeftInCol[Col{board, i}] = 5
+	numberOfBoards := len(inputs) / PARSE_BOARD_SIZE
+
+	squaresLeftInLine := map[BingoCardLine]int{}
+	cardScoreForLine := map[BingoCardLine]int{}
+
+	for cardIdx := 0; cardIdx < numberOfBoards; cardIdx++ {
+		for i := 0; i < BOARD_SIZE; i++ {
+			squaresLeftInLine[BingoCardLine{cardIdx, Row, i}] = BOARD_SIZE
+			squaresLeftInLine[BingoCardLine{cardIdx, Col, i}] = BOARD_SIZE
+
+			cardScoreForLine[BingoCardLine{cardIdx, Row, i}] = 0
+			cardScoreForLine[BingoCardLine{cardIdx, Col, i}] = 0
 		}
-		boardSums[board] = 0
 	}
 
 	// Set the locations of each number that gets called
-	rowsOfChosenNumber := map[string]([]Row){}
-	colsOfChosenNumber := map[string]([]Col){}
+	linesOfChosenNumber := map[int]([]BingoCardLine){}
 	i := 2
-	board := 0
+	cardIdx := 0
 	for i < len(inputs) {
-		for r := 0; r < 5; r++ {
-			// TIL: Srings.split doesn't work here!
+		for r := 0; r < BOARD_SIZE; r++ {
 			row := strings.Fields(inputs[i])
-			for c := 0; c < 5; c++ {
+			for c := 0; c < BOARD_SIZE; c++ {
 				n := row[c]
-				rowsOfChosenNumber[n] = append(rowsOfChosenNumber[n], Row{board, r})
-				colsOfChosenNumber[n] = append(colsOfChosenNumber[n], Col{board, c})
+				amount, _ := strconv.Atoi(n)
 
-				boardSums[board] += lib.ToInt(n)
-
+				linesOfChosenNumber[amount] = append(
+					linesOfChosenNumber[amount],
+					BingoCardLine{cardIdx, Row, r},
+				)
+				linesOfChosenNumber[amount] = append(
+					linesOfChosenNumber[amount],
+					BingoCardLine{cardIdx, Col, c},
+				)
+				cardScoreForLine = updateBoardScores(cardScoreForLine, cardIdx, amount)
 			}
 			i++
 		}
 		i++
-		board++
+		cardIdx++
 	}
 
 	// Let's play!!
+	bingoScore := 0
 	numbers := strings.Split(inputs[0], ",")
-	hasBingo := false
+
+GAME_PLAY:
 	for _, n := range numbers {
-		amt, _ := strconv.Atoi(n)
+		amount, _ := strconv.Atoi(n)
+		lines := linesOfChosenNumber[amount]
 
-		// Mark rows
-		rows := rowsOfChosenNumber[n]
-		for _, row := range rows {
-			boardSums[row.board] -= amt
-
-			squaresLeftInRow[row] -= 1
-
-			if squaresLeftInRow[row] == 0 {
-				hasBingo = true
-				print(amt*boardSums[row.board], "\n")
-				break
+		for _, line := range lines {
+			if line.lineType == Row {
+				cardScoreForLine = updateBoardScores(cardScoreForLine, line.cardId, -amount)
 			}
 		}
 
-		// Mark cols
-		cols := colsOfChosenNumber[n]
-		for _, col := range cols {
-			squaresLeftInCol[col] -= 1
-
-			if squaresLeftInCol[col] == 0 {
-				hasBingo = true
-				print(amt*boardSums[col.board], "\n")
-				break
+		for _, line := range lines {
+			squaresLeftInLine[line] -= 1
+			if squaresLeftInLine[line] == 0 {
+				bingoScore = amount * cardScoreForLine[line]
+				break GAME_PLAY
 			}
-		}
-
-		if hasBingo {
-			break
 		}
 	}
-
+	fmt.Println(bingoScore)
 }
 
 func PartTwo() {
 	inputs := lib.ReadInputFile("input.txt")
 
-	rowCheck := map[Row]int{}
-	colCheck := map[Col]int{}
+	// Start with empty rows and cols. Need 5 markings to continue
+	numberOfBoards := len(inputs) / PARSE_BOARD_SIZE
 
-	// Each board's row / column has 5 left
-	nBoards := len(inputs) / 6
-	boardSums := map[int]int{}
-	boardHasBingoed := map[int]bool{}
-	for board := 0; board < nBoards; board++ {
+	squaresLeftInLine := map[BingoCardLine]int{}
+	cardScoreForLine := map[BingoCardLine]int{}
+
+	for cardIdx := 0; cardIdx < numberOfBoards; cardIdx++ {
 		for i := 0; i < 5; i++ {
-			rowCheck[Row{board, i}] = 5
-			colCheck[Col{board, i}] = 5
+			squaresLeftInLine[BingoCardLine{cardIdx, Row, i}] = BOARD_SIZE
+			squaresLeftInLine[BingoCardLine{cardIdx, Col, i}] = BOARD_SIZE
+
+			cardScoreForLine[BingoCardLine{cardIdx, Row, i}] = 0
+			cardScoreForLine[BingoCardLine{cardIdx, Col, i}] = 0
 		}
-		boardSums[board] = 0
 	}
 
 	// Set the locations of each number that gets called
-	rowsOfNumber := map[string]([]Row){}
-	colsOfNumber := map[string]([]Col){}
+	linesOfChosenNumber := map[int]([]BingoCardLine){}
 	i := 2
-	board := 0
+	cardIdx := 0
 	for i < len(inputs) {
-		for r := 0; r < 5; r++ {
+		for r := 0; r < BOARD_SIZE; r++ {
 			row := strings.Fields(inputs[i])
-			for c := 0; c < 5; c++ {
+			for c := 0; c < BOARD_SIZE; c++ {
 				n := row[c]
-				rowsOfNumber[n] = append(rowsOfNumber[n], Row{board, r})
-				colsOfNumber[n] = append(colsOfNumber[n], Col{board, c})
+				amount, _ := strconv.Atoi(n)
 
-				amt, _ := strconv.Atoi(n)
-				boardSums[board] += amt
+				linesOfChosenNumber[amount] = append(
+					linesOfChosenNumber[amount],
+					BingoCardLine{cardIdx, Row, r},
+				)
+				linesOfChosenNumber[amount] = append(
+					linesOfChosenNumber[amount],
+					BingoCardLine{cardIdx, Col, c},
+				)
 
+				cardScoreForLine = updateBoardScores(cardScoreForLine, cardIdx, amount)
 			}
 			i++
 		}
 		i++
-		board++
+		cardIdx++
 	}
 
 	// Let's play!!
+	bingoScore := 0
 	numbers := strings.Split(inputs[0], ",")
-	sumFromLastBingo := 0
-	for _, n := range numbers {
-		amt := lib.ToInt(n)
 
-		// Mark rows
-		rows := rowsOfNumber[n]
-		for _, row := range rows {
-			boardSums[row.board] -= amt
-			rowCheck[row] -= 1
+	cardHasBingo := map[int]bool{}
 
-			if rowCheck[row] == 0 && !boardHasBingoed[row.board] {
-				boardHasBingoed[row.board] = true
-				sumFromLastBingo = amt * boardSums[row.board]
-			}
-		}
-
-		// Mark cols
-		cols := colsOfNumber[n]
-		for _, col := range cols {
-			colCheck[col] -= 1
-			if colCheck[col] == 0 && !boardHasBingoed[col.board] {
-				boardHasBingoed[col.board] = true
-				sumFromLastBingo = amt * boardSums[col.board]
-			}
-
-		}
-
+	for i := 0; i < numberOfBoards; i++ {
+		cardHasBingo[i] = false
 	}
-	print(sumFromLastBingo)
+
+	for _, n := range numbers {
+		amount, _ := strconv.Atoi(n)
+		lines := linesOfChosenNumber[amount]
+
+		for _, line := range lines {
+			if line.lineType == Row {
+				cardScoreForLine = updateBoardScores(cardScoreForLine, line.cardId, -amount)
+			}
+		}
+
+		for _, line := range lines {
+			squaresLeftInLine[line] -= 1
+			if squaresLeftInLine[line] == 0 && !cardHasBingo[line.cardId] {
+				bingoScore = amount * cardScoreForLine[line]
+				cardHasBingo[line.cardId] = true
+			}
+		}
+	}
+	fmt.Println(bingoScore)
 }
 
 func main() {
