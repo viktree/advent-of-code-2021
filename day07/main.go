@@ -8,13 +8,6 @@ import (
 	"strings"
 )
 
-func Abs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
-}
-
 func PartOne() {
 	inputs := lib.ReadInputFile("input.txt")
 
@@ -60,15 +53,13 @@ func PartTwo() {
 
 	smallestSum := 999999999999
 	for j := 0; j <= maxN; j++ {
-		sum := 0
+		score := 0
 		for _, n := range position {
 			upper := int(math.Abs(float64(n - j)))
-			for i := 1; i <= upper; i++ {
-				sum += i
-			}
+			score += ((upper) * (upper + 1)) / 2
 		}
-		if sum < smallestSum {
-			smallestSum = sum
+		if score < smallestSum {
+			smallestSum = score
 		}
 	}
 	fmt.Println(smallestSum)
